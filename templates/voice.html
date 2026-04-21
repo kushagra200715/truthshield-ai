@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Call Scanner</title>
+
+  <!-- ✅ FIX -->
+  <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container nav">
+    <div class="logo">🛡 TruthShieldAI</div>
+
+    <div class="links">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</nav>
+
+<section class="page">
+  <h1>📞 Call + Voice Scam Detection</h1>
+
+  <div class="card scanner-box">
+
+    <!-- ✅ input -->
+    <input id="numberInput" placeholder="+91XXXXXXXXXX">
+
+    <!-- ✅ button -->
+    <button onclick="startCall()" class="btn primary full">
+      Start Call & Scan
+    </button>
+
+    <!-- ✅ status -->
+    <p id="statusText" class="muted"></p>
+
+  </div>
+
+  <!-- Transcript -->
+  <div class="card result-box">
+    <h3>Transcript</h3>
+    <p id="transcriptText">No data yet</p>
+  </div>
+
+  <!-- Score -->
+  <div class="card result-box">
+    <h3>Scam Result</h3>
+    <p id="scoreText">-</p>
+  </div>
+
+</section>
+
+<script>
+async function startCall() {
+
+  const number = document.getElementById("numberInput").value;
+
+  if (!number.trim()) {
+    alert("Bhai number daal pehle 😑");
+    return;
+  }
+
+  document.getElementById("statusText").innerText =
+    "📞 Calling... listening... please wait (40 sec approx)";
+
+  try {
+    const res = await fetch("/call-scan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ number: number })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("statusText").innerText = "✅ Done";
+
+    // Transcript
+    document.getElementById("transcriptText").innerText =
+      data.transcript || "No speech detected";
+
+    // Score
+    document.getElementById("scoreText").innerHTML =
+      "Score: " + data.scam_score + "<br>" +
+      "Result: <b style='color:" + (data.result === "SCAM" ? "red" : "lightgreen") + "'>"
+      + data.result + "</b>";
+
+  } catch (err) {
+    console.error(err);
+    alert("Backend error aa gaya bhai 😭");
+  }
+}
+</script>
+
+</body>
+</html>
